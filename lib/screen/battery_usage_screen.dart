@@ -99,14 +99,15 @@ class _BatteryUsageScreenState extends State<BatteryUsageScreen> {
     }
 
     try {
-      final drainRate =
+      final drainRateData =
           await _adbService.getBatteryDrainRate(selectedDevice.id);
+      drainRateData['analysisTime'] = DateTime.now();
 
       if (_mounted) {
         setState(() {
-          _drainRate = drainRate;
-          _isDrainRateLoading = false;
+          _drainRate = drainRateData;
           _isAnalyzing = true;
+          _isDrainRateLoading = false;
         });
       }
     } catch (e) {
@@ -205,6 +206,11 @@ class _BatteryUsageScreenState extends State<BatteryUsageScreen> {
     final drainRate = _drainRate['drainRate'] as String;
     final estimatedHours = _drainRate['estimatedHours'] as String;
     final temperature = _drainRate['temperatureCelsius'] as double;
+    final analysisTime = _drainRate['analysisTime'] as DateTime;
+
+    // 시간 형식화
+    final timeStr =
+        '${analysisTime.hour.toString().padLeft(2, '0')}:${analysisTime.minute.toString().padLeft(2, '0')}:${analysisTime.second.toString().padLeft(2, '0')}';
 
     // 배터리 드레인 속도에 따른 색상 결정
     Color drainColor = Colors.green;
@@ -231,12 +237,30 @@ class _BatteryUsageScreenState extends State<BatteryUsageScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '배터리 소모 분석',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '배터리 소모 분석',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.timer, size: 14, color: Colors.blue[700]),
+                    SizedBox(width: 4),
+                    Text(
+                      timeStr,
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[700]),
+                    ),
+                  ],
+                ),
+              ],
             ),
             SizedBox(height: 16),
             Row(
